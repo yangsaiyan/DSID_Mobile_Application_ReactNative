@@ -1,20 +1,53 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import "react-native-reanimated";
+import "@walletconnect/react-native-compat";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { WagmiProvider } from "wagmi";
+import { mainnet, polygon, arbitrum } from "@wagmi/core/chains";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  createAppKit,
+  defaultWagmiConfig,
+  AppKit,
+} from "@reown/appkit-wagmi-react-native";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+import { useColorScheme } from "@/hooks/useColorScheme";
+import AppNavigator from "./navigation/AppNavigator";
+
+const projectId = "99231f0dc98dffcc92301ef7fb1da4d5";
+
+const queryClient = new QueryClient();
+
+const metadata = {
+  name: "AppKit RN",
+  description: "AppKit RN Example",
+  url: "https://reown.com/appkit",
+  icons: ["https://avatars.githubusercontent.com/u/179229932"],
+  redirect: {
+    native: "YOUR_APP_SCHEME://",
+    universal: "YOUR_APP_UNIVERSAL_LINK.com",
+  },
+};
+
+const chains = [mainnet, polygon, arbitrum] as const;
+
+const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
+
+createAppKit({
+  projectId,
+  wagmiConfig,
+  defaultChain: mainnet,
+  enableAnalytics: true,
+});
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   useEffect(() => {
@@ -28,12 +61,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <AppNavigator />
+        <AppKit />
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
