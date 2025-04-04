@@ -1,8 +1,9 @@
 import "react-native-reanimated";
 import "@walletconnect/react-native-compat";
+import "react-native-webcrypto";
 
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, arbitrum } from "@wagmi/core/chains";
+import { polygonAmoy } from "@wagmi/core/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createAppKit,
@@ -12,11 +13,10 @@ import {
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
 import AppNavigator from "./navigation/AppNavigator";
+import Constants from 'expo-constants';
 
-const projectId = "99231f0dc98dffcc92301ef7fb1da4d5";
+const projectId = Constants?.expoConfig?.extra?.REOWN_PROJECT_ID;
 
 const queryClient = new QueryClient();
 
@@ -31,14 +31,14 @@ const metadata = {
   },
 };
 
-const chains = [mainnet, polygon, arbitrum] as const;
+const chains = [polygonAmoy] as const;
 
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
 createAppKit({
   projectId,
   wagmiConfig,
-  defaultChain: mainnet,
+  defaultChain: polygonAmoy,
   enableAnalytics: true,
 });
 
