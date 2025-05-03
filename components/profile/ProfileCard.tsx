@@ -3,17 +3,19 @@ import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import { useAccount, useReadContract, useSignMessage } from "wagmi";
 import Constants from "expo-constants";
-import { Image, YStack } from "tamagui";
-
-interface NFTMetadata {
-  name: string;
-  description: string;
-  image: string;
-}
+import {
+  Card,
+  H2,
+  H4,
+  Image,
+  Paragraph,
+  SizableText,
+  Spinner,
+  YStack,
+} from "tamagui";
 
 export default function ProfileCard() {
   const { address, isConnected } = useAccount();
-  const { signMessage } = useSignMessage();
   const { data: student_NFT_ID } = useReadContract({
     abi: student_nft_abi,
     address: Constants?.expoConfig?.extra?.NFT_CONTRACT_ADDRESS,
@@ -35,14 +37,25 @@ export default function ProfileCard() {
 
   const [studentData, setStudentData] = useState<any>(null);
   const [nftURI, setURI] = useState<string>("");
+  const [displayID, setDisplayID] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   if (isConnected && address) {
-  //     setStudentData((prev)=>{
-  //       return await readContract
-  //     })
-  //   }
-  // }, [])
+  useEffect(() => {
+    if (isConnected && address) {
+      const url =
+        Constants?.expoConfig?.extra?.SERVER_URL + "student/" + encodeURIComponent(address);
+
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Data", data);
+          setStudentData(data);
+        });
+    }
+  }, [address]);
+
+  useEffect(() => {
+    console.log("studentData", studentData);
+  }, [studentData]);
 
   useEffect(() => {
     if (!student_NFT_URI) return;
@@ -63,19 +76,64 @@ export default function ProfileCard() {
   return (
     <View>
       {nftURI ? (
-        <Image
-          source={{
-            uri: nftURI,
-            width: 320,
-            height: 200,
-          }}
-          resizeMode="cover"
-        />
-      ) : (
-        <YStack width={250} height={250} backgroundColor={"#FFFFFF"}>
-          <Text>Loading student data...</Text>
+        <YStack>
+          <Card
+            onPress={() => {
+              setDisplayID(!displayID);
+            }}
+            enterStyle={{
+              scale: 1.5,
+              y: -10,
+              opacity: 0,
+            }}
+            animation="bouncy"
+            size="$4"
+            width={320}
+            height={200}
+            scale={0.9}
+            hoverStyle={{ scale: 0.925 }}
+            pressStyle={{ scale: 0.875 }}
+            borderRadius={18}
+          >
+            {displayID ? (
+              <Image
+                source={{
+                  uri: nftURI,
+                  width: 320,
+                  height: 200,
+                }}
+                resizeMode="cover"
+              />
+            ) : (
+              <YStack>
+                <Card.Header padded>
+                  <H4>Your infomation</H4>
+                </Card.Header>
+                <SizableText size="$3" paddingLeft={20}>
+                  Name: {studentData?.name}
+                </SizableText>
+                <SizableText size="$3" paddingLeft={20}>
+                  Student ID: {studentData?.studentId}
+                </SizableText>
+                <SizableText size="$3" paddingLeft={20}>
+                  Faculty: {studentData?.faculty}
+                </SizableText>
+                <SizableText size="$3" paddingLeft={20}>
+                  Course: {studentData?.course}
+                </SizableText>
+              </YStack>
+            )}
+          </Card>
         </YStack>
-        // <Text>Loading student data...</Text>
+      ) : (
+        <YStack
+          width={250}
+          height={250}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Spinner size="large" color="#FFFFFF" />
+        </YStack>
       )}
     </View>
   );
