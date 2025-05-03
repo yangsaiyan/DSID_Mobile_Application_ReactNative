@@ -1,12 +1,9 @@
-import { Alert, Button, StyleSheet, Text, View } from "react-native";
-import {
-  useAccount,
-  useSignMessage,
-  useWalletClient,
-} from "wagmi";
+import { Alert, View } from "react-native";
+import { useAccount, useSignMessage, useWalletClient } from "wagmi";
 import QRCode from "react-native-qrcode-svg";
 import { useState } from "react";
 import { ethers } from "ethers";
+import { Button, YStack } from "tamagui";
 
 export default function QRGenerator() {
   const { address, isConnected } = useAccount();
@@ -29,13 +26,13 @@ export default function QRGenerator() {
         ["address", "uint256"],
         [address, timestamp]
       );
-      
+
       const messageHash = ethers.keccak256(message);
-      
+
       const signature = await signMessageAsync({
-        message: { raw: ethers.getBytes(messageHash) }
+        message: { raw: ethers.getBytes(messageHash) },
       });
-  
+
       const recoveredAddress = ethers.verifyMessage(
         ethers.getBytes(messageHash),
         signature
@@ -44,15 +41,6 @@ export default function QRGenerator() {
       if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
         throw new Error("Signature verification failed locally");
       }
-
-      // Alert.alert(recoveredAddress.toLowerCase(), address.toLowerCase());
-
-      // writeContract({
-      //   abi: student_verify_abi,
-      //   address: "0x",
-      //   functionName: "verifyStudent",
-      //   args: [address, timestamp, signature],
-      // });
 
       const qrData = JSON.stringify({
         timestamp: timestampBigInt.toString(),
@@ -72,44 +60,32 @@ export default function QRGenerator() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Student Verification QR</Text>
-      <Text>{qrInfo}</Text>
+    <YStack
+      width={"260"}
+      height={"260"}
+      alignItems="center"
+      justifyContent="center"
+      marginTop="$4"
+    >
       {qrGenerated ? (
-        <View style={styles.qrSection}>
+        <YStack padding={10} borderRadius={10} backgroundColor={"#e3e3e3"}>
           <QRCode
             value={qrInfo}
             size={250}
             color="black"
             backgroundColor="white"
           />
-          <Text style={styles.qrHint}>Scan this QR code for verification</Text>
-        </View>
+        </YStack>
       ) : (
-        <Button title="Generate Verification QR" onPress={generateQR} />
+        <Button
+          backgroundColor={"#e3e3e3"}
+          fontWeight={800}
+          onPress={generateQR}
+          width={"250"}
+        >
+          Generate QR-Code
+        </Button>
       )}
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  qrSection: {
-    alignItems: "center",
-    marginVertical: 30,
-  },
-  qrHint: {
-    marginTop: 15,
-    color: "#666",
-  },
-});

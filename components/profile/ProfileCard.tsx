@@ -1,70 +1,81 @@
-
+import { student_nft_abi } from "@/utils/constants";
 import { useEffect, useState } from "react";
 import { View, Text } from "react-native";
-import { useAccount, useSignMessage } from "wagmi";
+import { useAccount, useReadContract, useSignMessage } from "wagmi";
+import Constants from "expo-constants";
+import { Image, YStack } from "tamagui";
+
+interface NFTMetadata {
+  name: string;
+  description: string;
+  image: string;
+}
 
 export default function ProfileCard() {
   const { address, isConnected } = useAccount();
   const { signMessage } = useSignMessage();
+  const { data: student_NFT_ID } = useReadContract({
+    abi: student_nft_abi,
+    address: Constants?.expoConfig?.extra?.NFT_CONTRACT_ADDRESS,
+    functionName: "getTokenIdOfStudent",
+    args: [address],
+    query: {
+      enabled: !!address,
+    },
+  });
+  const { data: student_NFT_URI } = useReadContract({
+    abi: student_nft_abi,
+    address: Constants?.expoConfig?.extra?.NFT_CONTRACT_ADDRESS,
+    functionName: "getTokenURI",
+    args: student_NFT_ID ? [student_NFT_ID] : undefined,
+    query: {
+      enabled: !!student_NFT_ID,
+    },
+  });
+
   const [studentData, setStudentData] = useState<any>(null);
+  const [nftURI, setURI] = useState<string>("");
 
   // useEffect(() => {
-  //   if (!isConnected || !address) return; // Prevent running if the wallet is not connected
+  //   if (isConnected && address) {
+  //     setStudentData((prev)=>{
+  //       return await readContract
+  //     })
+  //   }
+  // }, [])
 
-  //   const fetchStudent = async () => {
-  //     try {
-  //       console.log("Fetching student data...");
-    
-  //       if (!signMessage) {
-  //         console.error("❌ signMessageAsync is undefined!");
-  //         return;
-  //       }
-  //       // console.log("✅ signMessageAsync exists");
-    
-  //       // if (!address) {
-  //       //   console.error("❌ Wallet address not found!");
-  //       //   return;
-  //       // }
-  //       // console.log("✅ Wallet Address:", address);
-    
-  //       // console.log("📌 Requesting message signature...");
-        
-  //       // setTimeout(() => console.warn("⚠️ Still waiting for signature..."), 5000); // Alert if it takes too long
-    
-  //       // const signedMessage = await signMessage({ message: "Sign to verify your identity" });
-    
-  //       // console.log("✅ Signed Message:", signedMessage);
-    
-  //       console.log("📌 Fetching encrypted student data from GunDB...");
-  //       console.log(address);
-  //       const encryptedData = await getStudent(address);
-  //       console.log("✅ Encrypted Data:", encryptedData);
-    
-  //       if (!encryptedData) {
-  //         console.error("❌ No encrypted data received!");
-  //         return;
-  //       }
-    
-  //       console.log("📌 Decrypting student data...");
-  //       const student = await signMessageAndDecrypt(signedMessage, encryptedData);
-  //       console.log("✅ Decrypted Student Data:", student);
-    
-  //       setStudentData(JSON.parse(student));
-  //     } catch (error) {
-  //       console.error("❌ Error in fetchStudent:", error);
-  //     }
-  //   };
-    
+  useEffect(() => {
+    if (!student_NFT_URI) return;
 
-  //   fetchStudent();
-  // }, [address, isConnected]); // Runs only when `address` or connection status changes
+    fetch(
+      Constants?.expoConfig?.extra?.NFT_PINATA_GATEWAY +
+        student_NFT_URI.toString()
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setURI(data?.image);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [student_NFT_URI]);
 
   return (
     <View>
-      {studentData ? (
-        <Text>Student Name: {studentData.name}</Text>
+      {nftURI ? (
+        <Image
+          source={{
+            uri: nftURI,
+            width: 320,
+            height: 200,
+          }}
+          resizeMode="cover"
+        />
       ) : (
-        <Text>Loading student data...</Text>
+        <YStack width={250} height={250} backgroundColor={"#FFFFFF"}>
+          <Text>Loading student data...</Text>
+        </YStack>
+        // <Text>Loading student data...</Text>
       )}
     </View>
   );

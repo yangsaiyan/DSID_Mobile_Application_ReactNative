@@ -69,6 +69,9 @@ export default {
         REOWN_PROJECT_ID: process.env.REOWN_PROJECT_ID,
         VERIFICATION_CONTRACT_ADDRESS:
           process.env.VERIFICATION_CONTRACT_ADDRESS,
+        NFT_CONTRACT_ADDRESS: process.env.NFT_CONTRACT_ADDRESS,
+        SERVER_URL: process.env.SERVER_URL,
+        NFT_PINATA_GATEWAY: process.env.NFT_PINATA_GATEWAY,
       },
     },
   },

@@ -14,11 +14,15 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import AppNavigator from "./navigation/AppNavigator";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
+import { createTamagui, TamaguiProvider, View } from "tamagui";
+import { defaultConfig } from "@tamagui/config/v4";
 
 const projectId = Constants?.expoConfig?.extra?.REOWN_PROJECT_ID;
 
 const queryClient = new QueryClient();
+
+const config = createTamagui(defaultConfig);
 
 const metadata = {
   name: "AppKit RN",
@@ -62,8 +66,10 @@ export default function RootLayout() {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
+        <TamaguiProvider config={config}>
           <AppNavigator />
           <AppKit />
+        </TamaguiProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
