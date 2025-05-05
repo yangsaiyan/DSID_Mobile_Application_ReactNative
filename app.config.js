@@ -66,6 +66,9 @@ export default {
         typedRoutes: true,
       },
       extra: {
+        "eas": {
+          "projectId": "9c7143be-9bc7-4b02-801d-203c9dec2f23"
+        },
         REOWN_PROJECT_ID: process.env.REOWN_PROJECT_ID,
         VERIFICATION_CONTRACT_ADDRESS:
           process.env.VERIFICATION_CONTRACT_ADDRESS,

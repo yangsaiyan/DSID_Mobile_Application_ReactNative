@@ -1,6 +1,5 @@
 import "react-native-reanimated";
 import "@walletconnect/react-native-compat";
-import "react-native-webcrypto";
 
 import { WagmiProvider } from "wagmi";
 import { polygonAmoy } from "@wagmi/core/chains";
